@@ -12,6 +12,7 @@ class CameraUniforms {
     }
 
     // TODO-2: add extra functions to set values needed for light clustering here
+    
 }
 
 export class Camera {
