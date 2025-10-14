@@ -8,6 +8,7 @@ fn getBoundingBox() {
 
 }
 
+// could simplify this maybe?
 fn sphereIntersectsAABB(center: vec3f, radius: f32, minB: vec3f, maxB: vec3f) -> bool {
     var distSq = 0.0;
 
@@ -41,6 +42,7 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 // For each cluster (X, Y, Z):
 //     - Calculate the screen-space bounds for this cluster in 2D (XY).
 
+// oh wait is this px space?
     var minScreenBounds = vec2f(index.x * camera.screenX / camera.clusterSize, 
                              index.y * camera.screenY  / camera.clusterSize);
 
@@ -54,11 +56,13 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 
 //     - Convert these screen and depth bounds into view-space coordinates.
     
+    // convert from px to screen
+    // (px/width) * 2 - 1
+    // 1 - (py/height)* 2
+
     // P *= Uw (to unhomogenized)
 
     // Proj_Mat^-1 * P (to camera)
-
-    // View_
 
 //     - Store the computed bounding box (AABB) for the cluster.
 
