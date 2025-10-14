@@ -30,6 +30,9 @@ export class Lights {
 
     // TODO-2: add layouts, pipelines, textures, etc. needed for light clustering here
 
+    clustersArray = new Float32Array(Lights.maxNumLights * Lights.numFloatsPerLight);
+    clusterSetStorageBuffer: GPUBuffer;
+
     constructor(camera: Camera) {
         this.camera = camera;
 
@@ -94,6 +97,13 @@ export class Lights {
         });
 
         // TODO-2: initialize layouts, pipelines, textures, etc. needed for light clustering here
+
+        this.clusterSetStorageBuffer = device.createBuffer({
+            label: "clusters",
+            size: 16, // 16 + clustersize*clustersize*clustersize + whatever else in struct?
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        });
+
     }
 
     private populateLightsBuffer() {

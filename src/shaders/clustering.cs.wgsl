@@ -53,7 +53,12 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
     var farBounds;
 
 //     - Convert these screen and depth bounds into view-space coordinates.
+    
+    // P *= Uw (to unhomogenized)
 
+    // Proj_Mat^-1 * P (to camera)
+
+    // View_
 
 //     - Store the computed bounding box (AABB) for the cluster.
 
@@ -77,6 +82,10 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 
     for (int i = 0; i < LightSet.numLights; i++) 
     {
+
+        // !! may need to convert light to be in cam space since above puts everything in cam space (min/max bounds)
+        // mult w/ view mat to do world -> cam
+
         if (sphereIntersectsAABB(LightSet.lights[i].pos, ${lightRadius}, clusterSet[clusterIndx].minBounds, clusterSet[clusterIndx].maxBounds))
         {
             lightCount++;

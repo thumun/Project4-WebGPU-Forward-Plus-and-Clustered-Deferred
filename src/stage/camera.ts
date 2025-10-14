@@ -62,7 +62,6 @@ export class Camera {
     static readonly clusterSize = 16;
 
     invProjMat: Mat4 = mat4.create();
-    viewMat: Mat4 = mat4.create();
 
     keys: { [key: string]: boolean } = {};
 
@@ -83,8 +82,6 @@ export class Camera {
 
         // invert or inverse
         this.invProjMat = mat4.inverse(this.projMat);
-        // double check view calc..
-        this.viewMat = mat4.lookAt(this.cameraPos, vec3.add(this.cameraPos, this.cameraFront), this.cameraUp);
 
         this.rotateCamera(0, 0); // set initial camera vectors
 
@@ -181,7 +178,7 @@ export class Camera {
         this.uniforms.near = Camera.nearPlane;
         this.uniforms.far = Camera.farPlane;
         this.uniforms.invProjMat = this.invProjMat;
-        this.uniforms.viewMat = this.viewMat;
+        this.uniforms.viewMat = viewMat;
         this.uniforms.screenX = canvas.width;
         this.uniforms.screenY = canvas.height;
         this.uniforms.clusterSize = Camera.clusterSize;
