@@ -11,11 +11,16 @@ struct LightSet {
 }
 
 // TODO-2: you may want to create a ClusterSet struct similar to LightSet
-struct ClusterSet {
+struct Cluster {
     minBounds: vec3f, 
     maxBounds: vec3f,
     numLights: u32,
     lightIndices: array<u32>
+}
+
+struct ClusterSet {
+    numClusters: u32,
+    clusters: array<Cluster>
 }
 
 struct CameraUniforms {

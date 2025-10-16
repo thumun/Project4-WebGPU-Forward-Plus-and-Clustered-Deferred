@@ -1,7 +1,7 @@
 // TODO-2: implement the light clustering compute shader
 
 @group(${bindGroup_scene}) @binding(0) var<uniform> camera: CameraUniforms;
-@group(${bindGroup_scene}) @binding(1) var<read> lightSet: LightSet;
+@group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
 @group(${bindGroup_scene}) @binding(2) var<storage, read> clusterSet: ClusterSet;
 
 fn screen2View(screen: vec4f) -> vec4f {
