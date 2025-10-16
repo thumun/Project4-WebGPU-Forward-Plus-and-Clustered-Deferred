@@ -123,6 +123,7 @@ export class Lights {
     doLightClustering(encoder: GPUCommandEncoder) {
         // TODO-2: run the light clustering compute pass(es) here
         // implementing clustering here allows for reusing the code in both Forward+ and Clustered Deferred
+        
     }
 
     // CHECKITOUT: this is where the light movement compute shader is dispatched from the host
