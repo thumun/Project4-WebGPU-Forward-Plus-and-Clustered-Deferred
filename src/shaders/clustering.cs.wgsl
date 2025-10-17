@@ -2,9 +2,9 @@
 
 @group(${bindGroup_scene}) @binding(0) var<uniform> camera: CameraUniforms;
 @group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
-@group(${bindGroup_scene}) @binding(2) var<storage, read> clusterSet: ClusterSet;
+@group(${bindGroup_scene}) @binding(2) var<storage, read_write> clusterSet: ClusterSet;
 
-fn lineIntersectionToZPlane(a: vec3f, b: vec3f, zDistance: float) -> vec3f {
+fn lineIntersectionToZPlane(a: vec3f, b: vec3f, zDistance: f32) -> vec3f {
     //all clusters planes are aligned in the same z direction
     var normal = vec3(0.0, 0.0, 1.0);
     //getting the line from the eye to the tile
@@ -12,7 +12,7 @@ fn lineIntersectionToZPlane(a: vec3f, b: vec3f, zDistance: float) -> vec3f {
     //Computing the intersection length for the line and the plane
     var t = (zDistance - dot(normal, a)) / dot(normal, ab);
     //Computing the actual xyz position of the point along the line
-    return result = a + t * ab;
+    return a + t * ab;
 }
 
 fn screen2View(screen: vec4f) -> vec4f {
@@ -20,22 +20,23 @@ fn screen2View(screen: vec4f) -> vec4f {
     var texCoord = vec2f(screen[0] / camera.screenX, screen[1] / camera.screenY);
 
     //Convert to clipSpace
-    vec4 clip = vec4(vec2(texCoord[0], 1.0 - texCoord[1])* 2.0 - 1.0, screen[2], screen[3]);
-
+    var clip = vec4f(vec2f(texCoord[0] * 2.0 - 1.0, texCoord[1] * 2.0 - 1.0), screen[2], screen[3]);
+    clip.y = -clip.y;
     //View space transform
-    vec4 view = camera.invProjMat * clip;
+    var view = camera.invProjMat * clip;
 
     //Perspective projection
-    view = view / view[3];
+    view = view / view.w;
 
     return view;
+
 }
 
 // could simplify this maybe?
 fn sphereIntersectsAABB(center: vec3f, radius: f32, minB: vec3f, maxB: vec3f) -> bool {
     var distSq = 0.0;
 
-    for (int i = 0; i < 3; i++) {
+    for (var i = 0; i < 3; i++) {
         if (center[i] < minB[i]) {
             let d = minB[i] - center[i];
             distSq += d * d;
@@ -53,11 +54,11 @@ fn sphereIntersectsAABB(center: vec3f, radius: f32, minB: vec3f, maxB: vec3f) ->
 fn computeMain(@builtin(global_invocation_id) index: vec3u) {
     let i = index.x;
     // total clusters = size of grid -> x * y * z
-    if (i >= camera.clusterSizeX*camera.clusterSizeY*camera.clusterSizeZ) {
+    if (i >= ${clusterSizeX}*${clusterSizeY}*${clusterSizeZ}) {
         return;
     }
 
-    int clusterIndx = index.x + index.y * camera.clusterSizeX + index.z * (camera.clusterSizeX * camera.clusterSizeY);
+    var clusterIndx = index.x + index.y * ${clusterSizeX} + index.z * (${clusterSizeX} * ${clusterSizeY});
 
 // ------------------------------------
 // Calculating cluster bounds:
@@ -67,18 +68,18 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 
 // oh wait is this px space?
 
-    var tileSizePx = vec3f(camera.clusterSizeX, camera.clusterSizeY, camera.clusterSizeZ);
+     var tileSizeInPx = vec2f(camera.screenX / ${clusterSizeX}, camera.screenY / ${clusterSizeY});
 
-    var minScreenBounds = vec4f(vec2f(index.x * tileSizePx, 
-                             index.y * tileSizePx), -1.0, 1.0);
+    var minScreenBounds = vec4f(vec2f(f32(index.x) * tileSizeInPx.x, 
+                             f32(index.y) * tileSizeInPx.y), -1.0, 1.0);
 
-    var maxScreenBounds = vec4f(vec2f((index.x + 1) * tileSizePx, 
-                             (index.y + 1) * tileSizePx), -1.0, 1.0);
+    var maxScreenBounds = vec4f(vec2f(f32((index.x + 1)) * tileSizeInPx.x, 
+                             f32((index.y + 1)) * tileSizeInPx.y), -1.0, 1.0);
 
 //     - Calculate the depth bounds for this cluster in Z (near and far planes).
 
-    var nearBounds = -1.0 * camera.near * pow(camera.far/camera.near, index.z/camera.clusterSizeZ);
-    var farBounds = -1.0 * camera.near * pow(camera.far/camera.near, (index.z+1)/camera.clusterSizeZ);
+    var nearBounds = -1.0 * camera.near * pow(camera.far/camera.near, f32(index.z)/${clusterSizeZ});
+    var farBounds = -1.0 * camera.near * pow(camera.far/camera.near, f32((index.z+1))/(${clusterSizeZ}));
 
 //     - Convert these screen and depth bounds into view-space coordinates.
 
@@ -93,8 +94,8 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
     var maxPointNear = lineIntersectionToZPlane(eyePos, maxPointView, nearBounds);
     var maxPointFar  = lineIntersectionToZPlane(eyePos, maxPointView, farBounds);
 
-    vec3f minPointAABB = min(min(minPointNear, minPointFar), min(maxPointNear, maxPointFar));
-    vec3f maxPointAABB = max(max(minPointNear, minPointFar), max(maxPointNear, maxPointFar));
+    var minPointAABB = min(min(minPointNear, minPointFar), min(maxPointNear, maxPointFar));
+    var maxPointAABB = max(max(minPointNear, minPointFar), max(maxPointNear, maxPointFar));
 
 // ------------------------------------
 // Assigning lights to clusters:
@@ -102,33 +103,31 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 // For each cluster:
 //     - Initialize a counter for the number of lights in this cluster.
 
-    int lightCount = 0; 
+    var lightCount = 0u; 
 
 //     For each light:
 //         - Check if the light intersects with the cluster’s bounding box (AABB).
 //         - If it does, add the light to the cluster's light list.
 //         - Stop adding lights if the maximum number of lights is reached.
 
-    for (int i = 0; i < LightSet.numLights; i++) 
+    for (var i = 0u; i < lightSet.numLights; i++) 
     {
 
         // !! may need to convert light to be in cam space since above puts everything in cam space (min/max bounds)
         // mult w/ view mat to do world -> cam
-        var viewPos = camera.viewMat * vec4f(LightSet.lights[i].pos, 1.0);
+        var viewPos = camera.viewMat * vec4f(lightSet.lights[i].pos, 1.0);
 
         if (sphereIntersectsAABB(viewPos.xyz, ${lightRadius}, minPointAABB, maxPointAABB))
         {
             lightCount++;
+            clusterSet.clusters[clusterIndx].lightIndices[lightCount - 1u] = i;
 
             if (lightCount >= ${maxLights}) {
                 break;
-            }
-            else {
-                ClusterSet.clusters[clusterIndx].lightIndices.add(LightSet.lights[i]);
             }
         }
     }
 
 //     - Store the number of lights assigned to this cluster.
-    ClusterSet.clusters[clusterIndx].numLights = lightCount;
+    clusterSet.clusters[clusterIndx].numLights = lightCount;
 }

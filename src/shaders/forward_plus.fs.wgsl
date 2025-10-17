@@ -29,21 +29,23 @@ struct FragmentInput
     @location(2) uv: vec2f
 }
 
-fn getDepthSlice(zval: u32) -> u32 {
-    return u32((log2((zval)) * ${clusterSizeZ} / log2(camera.far/camera.near)) - (${clusterSizeZ}*log2(camera.near)) / log2(camera.far/camera.near));
+fn getDepthSlice(zval: f32) -> u32 {
+    let depthSlice = log2(abs(zval) / camera.near)* f32(${clusterSizeZ}) / log2(camera.far / camera.near);
+    return u32(depthSlice);
 }
 
 fn getClusterIndex(pixelCoord: vec3f) -> u32 {
 
-    var tileSizeInPx = vec2f(camera.screenX / ${clusterSizeX}, camera.screenY / ${clusterSizeY});
+    let pos_viewspace = (camera.viewMat * vec4(pixelCoord, 1.0)).xyz; // world space * view matrix = View space (camera space)
+    var clusterZVal  = getDepthSlice(pos_viewspace.z);
 
-    var clusterZVal  = getDepthSlice(pixelCoord.z);
+    var tileSizeInPx = vec2f(camera.screenX / f32(${clusterSizeX}), camera.screenY / f32(${clusterSizeY}));
 
-    var clusters    = vec3f( vec2f( pixelCoord.xy / tileSizeInPx), clusterZVal);
+    var clusters    = vec3<u32>(vec2<u32>( pixelCoord.xy / tileSizeInPx), clusterZVal);
     var clusterIndex = clusters.x +
                         ${clusterSizeX} * clusters.y +
                         (${clusterSizeX} * ${clusterSizeY}) * clusters.z;
-    return clusterIndex;
+    return u32(clusterIndex);
 }
 
 @fragment
@@ -57,9 +59,9 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     var totalLightContrib = vec3f(0, 0, 0);
     var clusterIdx = getClusterIndex(in.pos);
 
-    for (var lightIdx = 0u; lightIdx < ClusterSet.clusters[clusterIdx].numLights; lightIdx++) {
-        let light = ClusterSet.clusters[clusterIdx].lightIndices[lightIdx];
-        totalLightContrib += calculateLightContrib(light, in.pos, normalize(in.nor));
+    for (var lightIdx = 0u; lightIdx < clusterSet.clusters[clusterIdx].numLights; lightIdx++) {
+        let lightIndex = clusterSet.clusters[clusterIdx].lightIndices[lightIdx];
+        totalLightContrib += calculateLightContrib(lightSet.lights[lightIndex], in.pos, in.nor);
     }
 
     var finalColor = diffuseColor.rgb * totalLightContrib;

@@ -32,14 +32,14 @@ export const constants = {
 
     lightRadius: 2,
 
-    maxLights: 128,
+    maxLights: 512,
 
     clusterSizeX: 16,
     clusterSizeY: 9,
     clusterSizeZ: 24,
 
     clusterWorkGroupSize: 4,
-    clusterWorkGroupSizeXY: 8
+    clusterWorkGroupSizeXY: 4
 };
 
 // =================================

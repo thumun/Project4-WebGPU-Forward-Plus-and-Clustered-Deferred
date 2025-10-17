@@ -100,11 +100,14 @@ export class Lights {
         });
 
         // TODO-2: initialize layouts, pipelines, textures, etc. needed for light clustering here
-
+        const clusterStructSize = 4 + 4 * shaders.constants.maxLights; // 4 bytes for numLights + padding + maxLights indices
+        const numClusters = shaders.constants.clusterSizeX * shaders.constants.clusterSizeY * shaders.constants.clusterSizeZ;
+        const clusterBufferSize = 4 + numClusters * clusterStructSize;
+        
         this.clusterSetStorageBuffer = device.createBuffer({
             label: "clusters",
-            size: 4 + shaders.constants.clusterSizeX*shaders.constants.clusterSizeY*shaders.constants.clusterSizeZ * (4 + shaders.constants.maxLights),
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+            size: clusterBufferSize,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
         });
 
         this.clusterComputeBindGroupLayout = device.createBindGroupLayout({
@@ -118,12 +121,12 @@ export class Lights {
                 { // light
                     binding: 1,
                     visibility: GPUShaderStage.COMPUTE,
-                    buffer: { type: "storage" }
+                    buffer: { type: "read-only-storage" }
                 },
                 { // cluster
                     binding: 2,
                     visibility: GPUShaderStage.COMPUTE,
-                    buffer: { type: "storage" }
+                    buffer: { type: "storage", }
                 }
             ]
         });
@@ -158,7 +161,7 @@ export class Lights {
                     label: "cluster compute shader",
                     code: shaders.clusteringComputeSrc
                 }),
-                entryPoint: "main"
+                entryPoint: "computeMain"
             }
         });
 
