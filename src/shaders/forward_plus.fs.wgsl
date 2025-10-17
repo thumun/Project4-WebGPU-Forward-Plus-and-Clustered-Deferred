@@ -29,8 +29,21 @@ struct FragmentInput
     @location(2) uv: vec2f
 }
 
+fn getDepthSlice(zval: u32) -> u32 {
+    return u32((log2((zval)) * ${clusterSizeZ} / log2(camera.far/camera.near)) - (${clusterSizeZ}*log2(camera.near)) / log2(camera.far/camera.near));
+}
+
 fn getClusterIndex(pixelCoord: vec3f) -> u32 {
-    
+
+    var tileSizeInPx = vec2f(camera.screenX / ${clusterSizeX}, camera.screenY / ${clusterSizeY});
+
+    var clusterZVal  = getDepthSlice(pixelCoord.z);
+
+    var clusters    = vec3f( vec2f( pixelCoord.xy / tileSizeInPx), clusterZVal);
+    var clusterIndex = clusters.x +
+                        ${clusterSizeX} * clusters.y +
+                        (${clusterSizeX} * ${clusterSizeY}) * clusters.z;
+    return clusterIndex;
 }
 
 @fragment

@@ -25,11 +25,16 @@ export class ForwardPlusRenderer extends renderer.Renderer {
                 // may need to alter visibility based on what's in forward vs
                 { // camera uniforms
                     binding: 0,
-                    visibility: GPUShaderStage.VERTEX,
+                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
                     buffer: { type: "uniform" }
                 },
                 { // lightSet
                     binding: 1,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: { type: "read-only-storage" }
+                },
+                { // cluserSet
+                    binding: 2,
                     visibility: GPUShaderStage.FRAGMENT,
                     buffer: { type: "read-only-storage" }
                 }

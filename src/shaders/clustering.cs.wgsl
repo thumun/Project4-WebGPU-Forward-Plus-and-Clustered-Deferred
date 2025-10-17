@@ -4,6 +4,17 @@
 @group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
 @group(${bindGroup_scene}) @binding(2) var<storage, read> clusterSet: ClusterSet;
 
+fn lineIntersectionToZPlane(a: vec3f, b: vec3f, zDistance: float) -> vec3f {
+    //all clusters planes are aligned in the same z direction
+    var normal = vec3(0.0, 0.0, 1.0);
+    //getting the line from the eye to the tile
+    var ab =  b - a;
+    //Computing the intersection length for the line and the plane
+    var t = (zDistance - dot(normal, a)) / dot(normal, ab);
+    //Computing the actual xyz position of the point along the line
+    return result = a + t * ab;
+}
+
 fn screen2View(screen: vec4f) -> vec4f {
     //Convert to NDC
     var texCoord = vec2f(screen[0] / camera.screenX, screen[1] / camera.screenY);
@@ -38,7 +49,7 @@ fn sphereIntersectsAABB(center: vec3f, radius: f32, minB: vec3f, maxB: vec3f) ->
 }
 
 
-@compute @workgroup_size(16, 16)
+@compute @workgroup_size(${clusterWorkGroupSizeXY}, ${clusterWorkGroupSizeXY}, ${clusterWorkGroupSize})
 fn computeMain(@builtin(global_invocation_id) index: vec3u) {
     let i = index.x;
     // total clusters = size of grid -> x * y * z
@@ -67,7 +78,7 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 //     - Calculate the depth bounds for this cluster in Z (near and far planes).
 
     var nearBounds = -1.0 * camera.near * pow(camera.far/camera.near, index.z/camera.clusterSizeZ);
-    var farBounds = -1.0 * camera.near * pow(camera.far/camera.near, index.z/camera.clusterSizeZ);
+    var farBounds = -1.0 * camera.near * pow(camera.far/camera.near, (index.z+1)/camera.clusterSizeZ);
 
 //     - Convert these screen and depth bounds into view-space coordinates.
 
@@ -76,16 +87,14 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 
 //     - Store the computed bounding box (AABB) for the cluster.
 
-    vec3 minPointNear = minPointView * nearBounds;
-    vec3 minPointFar  = minPointView * farBounds;
-    vec3 maxPointNear = maxPointView * nearBounds;
-    vec3 maxPointFar  = maxPointView * farBounds;
+    var eyePos = vec3f(0.0f);
+    var minPointNear = lineIntersectionToZPlane(eyePos, minPointView, nearBounds);
+    var minPointFar  = lineIntersectionToZPlane(eyePos, minPointView, farBounds);
+    var maxPointNear = lineIntersectionToZPlane(eyePos, maxPointView, nearBounds);
+    var maxPointFar  = lineIntersectionToZPlane(eyePos, maxPointView, farBounds);
 
-    vec3 minPointAABB = min(min(minPointNear, minPointFar), min(maxPointNear, maxPointFar));
-    vec3 maxPointAABB = max(max(minPointNear, minPointFar), max(maxPointNear, maxPointFar));
-
-    clusterSet[clusterIndex].minBounds = minPointAABB;
-    clusterSet[clusterIndex].maxBounds = maxPointAABB;
+    vec3f minPointAABB = min(min(minPointNear, minPointFar), min(maxPointNear, maxPointFar));
+    vec3f maxPointAABB = max(max(minPointNear, minPointFar), max(maxPointNear, maxPointFar));
 
 // ------------------------------------
 // Assigning lights to clusters:
@@ -105,20 +114,21 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 
         // !! may need to convert light to be in cam space since above puts everything in cam space (min/max bounds)
         // mult w/ view mat to do world -> cam
+        var viewPos = camera.viewMat * vec4f(LightSet.lights[i].pos, 1.0);
 
-        if (sphereIntersectsAABB(LightSet.lights[i].pos, ${lightRadius}, clusterSet[clusterIndx].minBounds, clusterSet[clusterIndx].maxBounds))
+        if (sphereIntersectsAABB(viewPos.xyz, ${lightRadius}, minPointAABB, maxPointAABB))
         {
             lightCount++;
 
-            if (lightCount >= $(maxLights)) {
+            if (lightCount >= ${maxLights}) {
                 break;
             }
             else {
-                clusterSet[clusterIndx].lightIndices.add(LightSet.lights[i]);
+                ClusterSet.clusters[clusterIndx].lightIndices.add(LightSet.lights[i]);
             }
         }
     }
 
 //     - Store the number of lights assigned to this cluster.
-    clusterSet[clusterIndx].numLights = lightCount;
+    ClusterSet.clusters[clusterIndx].numLights = lightCount;
 }

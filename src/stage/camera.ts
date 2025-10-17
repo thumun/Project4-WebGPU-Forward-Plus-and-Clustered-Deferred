@@ -36,19 +36,6 @@ class CameraUniforms {
     set screenY(num: number) {
         this.floatView[51] = num;
     }
-
-    set clusterSizeX(num: number) {
-        this.floatView[52] = num;
-    }
-
-    set clusterSizeY(num: number) {
-        this.floatView[52] = num;
-    }
-
-    set clusterSizeZ(num: number) {
-        this.floatView[52] = num;
-    }
-
 }
 
 export class Camera {
@@ -67,9 +54,6 @@ export class Camera {
 
     static readonly nearPlane = 0.1;
     static readonly farPlane = 1000;
-    static readonly clusterSizeX = 16;
-    static readonly clusterSizeY = 9;
-    static readonly clusterSizeZ = 24;
 
     invProjMat: Mat4 = mat4.create();
 
@@ -90,7 +74,6 @@ export class Camera {
 
         this.projMat = mat4.perspective(toRadians(fovYDegrees), aspectRatio, Camera.nearPlane, Camera.farPlane);
 
-        // invert or inverse
         this.invProjMat = mat4.inverse(this.projMat);
 
         this.rotateCamera(0, 0); // set initial camera vectors
@@ -191,10 +174,6 @@ export class Camera {
         this.uniforms.viewMat = viewMat;
         this.uniforms.screenX = canvas.width;
         this.uniforms.screenY = canvas.height;
-        this.uniforms.clusterSizeX = Camera.clusterSizeX;
-        this.uniforms.clusterSizeY = Camera.clusterSizeY;
-        this.uniforms.clusterSizeZ = Camera.clusterSizeZ;
-
 
         // TODO-1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`
