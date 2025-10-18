@@ -190,8 +190,8 @@ export class Lights {
 
         computePass.setBindGroup(0, this.clusterComputeBindGroup);
 
-        computePass.dispatchWorkgroups(Math.ceil(shaders.constants.clusterSizeX / shaders.constants.clusterWorkGroupSizeXY),
-                                       Math.ceil(shaders.constants.clusterSizeY / shaders.constants.clusterWorkGroupSizeXY),
+        computePass.dispatchWorkgroups(Math.ceil(shaders.constants.clusterSizeX / shaders.constants.clusterWorkGroupSize),
+                                       Math.ceil(shaders.constants.clusterSizeY / shaders.constants.clusterWorkGroupSize),
                                        Math.ceil(shaders.constants.clusterSizeZ / shaders.constants.clusterWorkGroupSize));
 
         computePass.end();

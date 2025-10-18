@@ -38,8 +38,7 @@ export const constants = {
     clusterSizeY: 9,
     clusterSizeZ: 24,
 
-    clusterWorkGroupSize: 4,
-    clusterWorkGroupSizeXY: 4
+    clusterWorkGroupSize: 4
 };
 
 // =================================

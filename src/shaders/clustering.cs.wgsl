@@ -5,34 +5,23 @@
 @group(${bindGroup_scene}) @binding(2) var<storage, read_write> clusterSet: ClusterSet;
 
 fn lineIntersectionToZPlane(a: vec3f, b: vec3f, zDistance: f32) -> vec3f {
-    //all clusters planes are aligned in the same z direction
     var normal = vec3(0.0, 0.0, 1.0);
-    //getting the line from the eye to the tile
     var ab =  b - a;
-    //Computing the intersection length for the line and the plane
     var t = (zDistance - dot(normal, a)) / dot(normal, ab);
-    //Computing the actual xyz position of the point along the line
     return a + t * ab;
 }
 
 fn screen2View(screen: vec4f) -> vec4f {
-    //Convert to NDC
     var texCoord = vec2f(screen[0] / camera.screenX, screen[1] / camera.screenY);
 
-    //Convert to clipSpace
     var clip = vec4f(vec2f(texCoord[0] * 2.0 - 1.0, texCoord[1] * 2.0 - 1.0), screen[2], screen[3]);
     clip.y = -clip.y;
-    //View space transform
     var view = camera.invProjMat * clip;
 
-    //Perspective projection
-    view = view / view.w;
-
-    return view;
+    return view / view.w;
 
 }
 
-// could simplify this maybe?
 fn sphereIntersectsAABB(center: vec3f, radius: f32, minB: vec3f, maxB: vec3f) -> bool {
     var distSq = 0.0;
 
@@ -50,11 +39,10 @@ fn sphereIntersectsAABB(center: vec3f, radius: f32, minB: vec3f, maxB: vec3f) ->
 }
 
 
-@compute @workgroup_size(${clusterWorkGroupSizeXY}, ${clusterWorkGroupSizeXY}, ${clusterWorkGroupSize})
+@compute @workgroup_size(${clusterWorkGroupSize}, ${clusterWorkGroupSize}, ${clusterWorkGroupSize})
 fn computeMain(@builtin(global_invocation_id) index: vec3u) {
-    let i = index.x;
-    // total clusters = size of grid -> x * y * z
-    if (i >= ${clusterSizeX}*${clusterSizeY}*${clusterSizeZ}) {
+   
+    if ( (index.x >= ${clusterSizeX}) || (index.y >= ${clusterSizeY}) || (index.z >= ${clusterSizeZ})) {
         return;
     }
 
@@ -66,9 +54,7 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 // For each cluster (X, Y, Z):
 //     - Calculate the screen-space bounds for this cluster in 2D (XY).
 
-// oh wait is this px space?
-
-     var tileSizeInPx = vec2f(camera.screenX / ${clusterSizeX}, camera.screenY / ${clusterSizeY});
+    var tileSizeInPx = vec2f(camera.screenX / ${clusterSizeX}, camera.screenY / ${clusterSizeY});
 
     var minScreenBounds = vec4f(vec2f(f32(index.x) * tileSizeInPx.x, 
                              f32(index.y) * tileSizeInPx.y), -1.0, 1.0);
@@ -78,8 +64,8 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
 
 //     - Calculate the depth bounds for this cluster in Z (near and far planes).
 
-    var nearBounds = -1.0 * camera.near * pow(camera.far/camera.near, f32(index.z)/${clusterSizeZ});
-    var farBounds = -1.0 * camera.near * pow(camera.far/camera.near, f32((index.z+1))/(${clusterSizeZ}));
+    var nearBounds = -1.0 * camera.near * pow(camera.far/camera.near, f32(index.z)/f32(${clusterSizeZ}));
+    var farBounds =  -1.0 * camera.near * pow(camera.far/camera.near, f32((index.z+1))/f32(${clusterSizeZ}));
 
 //     - Convert these screen and depth bounds into view-space coordinates.
 
@@ -117,7 +103,7 @@ fn computeMain(@builtin(global_invocation_id) index: vec3u) {
         // mult w/ view mat to do world -> cam
         var viewPos = camera.viewMat * vec4f(lightSet.lights[i].pos, 1.0);
 
-        if (sphereIntersectsAABB(viewPos.xyz, ${lightRadius}, minPointAABB, maxPointAABB))
+        if (sphereIntersectsAABB(viewPos.xyz, f32(${lightRadius}), minPointAABB, maxPointAABB))
         {
             lightCount++;
             clusterSet.clusters[clusterIndx].lightIndices[lightCount - 1u] = i;
