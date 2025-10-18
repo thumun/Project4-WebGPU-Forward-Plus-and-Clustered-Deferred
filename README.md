@@ -20,13 +20,14 @@ WebGL Forward+ and Clustered Deferred Shading
 This method of rendering is where for each fragment, you look at all of the lights in the scene in order to compute the lighting and thereby the color of that fragment. This can be particularly expensive when there are many lights in the scene as well as rather inefficient. For example, if there is a light that would not reach/affect a fragment in any way, there is no need to even consider it. Which is how Forward+ can be used as an optimization! 
 
 ## Forward+ Method
-Forward+ takes the Naive method and adds a small but significant adjustment: adding clusters. Clusters are split portions of the screen that hold information about which lights affect the pixels within the cluster. These clusters reliant on the camera view and are recomputed if there are ant changes. The process of creating clusters is quite straighforward: 
+Forward+ takes the Naive method and adds a small but significant optimization: adding clusters. Clusters are split portions of the screen that hold information about which lights affect the pixels within the cluster. So, rather than checking every light in the scene while rendering, we simply look at which cluster the fragment is in and refer to the lights that affect that cluster-which is a lot more efficient! 
 
-First, to make the cluster grid, the camera view/screen is divvied up based on how many clusters you want to have. For this implementation, I chose 16 in the x direction, 9 in the y direction, and 24 in the z direction as this is in line with the aspect ratio that I am working with. In order to determine which lights affect which clusters, these clusters need to be frustrums.
+Clusters are frustrums that correspond to tiles on our screen. In that manner, they are reliant on the camera view and are recomputed if there are that changes. The clusters themselves are computed with the help of a compute shader. Prior to the shader, we first choose how to divvy up the screen. In this implementation, I chose 16 in the x direction, 9 in the y direction, and 24 in the z direction as this is in line with the aspect ratio that I am working with. Then, in the shader we calculate the screen-space bounds for the cluster first and then the depth bounds via the near/far planes of the camera. We then want to get the view-space coordinates and compute the min/max bounds of the cluster.
 
+The min/max bounds are necessary in assigning the lights to the clusters. We check if each light intersects with the cluster's bounds and if so, we add it to the cluster's set of lights-as long as we have not hit the max number of lights a cluster can have. We then use a similar fragment shader as the naive method but utilize clusters rather than looping through all of the lights.
 
 ## Clustered Deferred Method 
-//
+The Clustered Deferred method further optimizes the Forward+ method by .. 
 
 ### Performance Analysis
 
