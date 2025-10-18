@@ -90,7 +90,7 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
         this.albedoTexture = renderer.device.createTexture({
             size: [renderer.canvas.width, renderer.canvas.height],
             usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
-            format: 'bgra8unorm',
+            format: renderer.canvasFormat,
         });
         this.albedoTextureView = this.albedoTexture.createView();
 
@@ -176,7 +176,7 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
                         format: "rgba16float", // norm
                     },
                     {
-                        format: "bgra8unorm", // albedo
+                        format: renderer.canvasFormat, // albedo
                     }
                 ]
             }
@@ -300,6 +300,8 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
         fullscreenRenderPass.setPipeline(this.fullscreenPipeline);
         fullscreenRenderPass.setBindGroup(shaders.constants.bindGroup_gBuffer, this.gBufferBindGroup);
         fullscreenRenderPass.setBindGroup(shaders.constants.bindGroup_scene, this.sceneUniformsBindGroup);
+
+        fullscreenRenderPass.draw(6, 1);
 
         fullscreenRenderPass.end();
 
