@@ -3,25 +3,29 @@ WebGL Forward+ and Clustered Deferred Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 4**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Neha Thumu
+  * [LinkedIn](https://www.linkedin.com/in/neha-thumu/)
+* Tested on: Windows 11 Pro, i9-13900H @ 2.60GHz 32GB, Nvidia GeForce RTX 4070
 
 ### Live Demo
 
-[![](img/thumb.png)](http://TODO.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred)
+[![](img/thumb.png)](https://thumun.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred/)
 
 ### Demo Video/GIF
 
 [![](img/video.mp4)](TODO)
 
-### (TODO: Your README)
+### Project Details
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+### Performance Analysis
+
+
+### Resources Utilized 
+
+- [Forward+ Process](https://www.aortiz.me/2018/12/21/CG.html#part-2)
+- [Clustered Deferred Process](https://webgpu.github.io/webgpu-samples/?sample=deferredRendering#fragmentWriteGBuffers.wgsl)
+- [WebGPU offset calculator](https://webgpufundamentals.org/webgpu/lessons/resources/wgsl-offset-computer.html#)
 
 ### Credits
 
