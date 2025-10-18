@@ -39,6 +39,7 @@ In the second pass, we sample these buffers (that are textures) in order to rend
 ## Performance Analysis
 
 
+
 ## Resources Utilized 
 
 - [Forward+ Process](https://www.aortiz.me/2018/12/21/CG.html#part-2)
