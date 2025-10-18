@@ -16,7 +16,17 @@ WebGL Forward+ and Clustered Deferred Shading
 [![](img/video.mp4)](TODO)
 
 ### Project Details
+## Naive/Forward Method 
+This method of rendering is where for each fragment, you look at all of the lights in the scene in order to compute the lighting and thereby the color of that fragment. This can be particularly expensive when there are many lights in the scene as well as rather inefficient. For example, if there is a light that would not reach/affect a fragment in any way, there is no need to even consider it. Which is how Forward+ can be used as an optimization! 
 
+## Forward+ Method
+Forward+ takes the Naive method and adds a small but significant adjustment: adding clusters. Clusters are split portions of the screen that hold information about which lights affect the pixels within the cluster. These clusters reliant on the camera view and are recomputed if there are ant changes. The process of creating clusters is quite straighforward: 
+
+First, to make the cluster grid, the camera view/screen is divvied up based on how many clusters you want to have. For this implementation, I chose 16 in the x direction, 9 in the y direction, and 24 in the z direction as this is in line with the aspect ratio that I am working with. In order to determine which lights affect which clusters, these clusters need to be frustrums.
+
+
+## Clustered Deferred Method 
+//
 
 ### Performance Analysis
 
