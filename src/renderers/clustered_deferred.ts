@@ -187,8 +187,10 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
             layout: renderer.device.createPipelineLayout({
                 label: "fullscreen pipeline layout",
                 bindGroupLayouts: [
-                    this.gBufferBindGroupLayout,
-                    this.sceneUniformsBindGroupLayout
+                    this.sceneUniformsBindGroupLayout,
+                    undefined,
+                    undefined,
+                    this.gBufferBindGroupLayout // since this is 3 in consts
                 ]
             }),
             depthStencil: {

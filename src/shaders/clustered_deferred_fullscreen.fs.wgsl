@@ -2,7 +2,6 @@
 
 // Similar to the Forward+ fragment shader, but with vertex information coming from the G-buffer instead.
 
-
 @group(${bindGroup_scene}) @binding(0) var<uniform> camera: CameraUniforms;
 @group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
 @group(${bindGroup_scene}) @binding(2) var<storage, read> clusterSet: ClusterSet;
@@ -10,8 +9,6 @@
 @group(${bindGroup_gBuffer}) @binding(0) var posTex: texture_2d<f32>;
 @group(${bindGroup_gBuffer}) @binding(1) var normTex: texture_2d<f32>;
 @group(${bindGroup_gBuffer}) @binding(2) var albedoTex: texture_2d<f32>;
-
-@group(${bindGroup_material}) @binding(1) var diffuseTexSampler: sampler;
 
 fn getDepthSlice(zval: f32) -> u32 {
     return u32(log2(abs(zval) / camera.near)* f32(${clusterSizeZ}) / log2(camera.far / camera.near));
