@@ -46,7 +46,19 @@ In the second pass, we sample these buffers (that are textures) in order to rend
 
 ## Performance Analysis
 
+FPS  |  Milliseconds per Frame
+:-------------------------:|:-------------------------:
+![fps](https://github.com/thumun/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred/blob/main/img/fps.png?raw=true) |  ![ms](https://github.com/thumun/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred/blob/main/img/msperframe.png?raw=true) |
 
+As a note, the millisecond tracker was not working for me so I calculated the second chart by using the FPS.
+
+The charts indicate that the Clustered Deferred method is faster than the Forward Plus method and this is especially visible with high numbers of lights. The naive method, as expected, is considerably slower than the other two which is very visible at the higher light numbers. In general, the Naive method has a clear trend where after the lights get to around 1000 the frame rate drops significantly and stays that way. For the Forward Plus, the trend is much more gradual however by 3500-4000 lights it somewhat plateaus. For the Clustered Deffered, it is generally pretty consistent (and very fast) except for the final few datapoints. It is interesting to note that for the small amounts of lights (100 and 1000) the Clustered Deferred has a lower speed compared to higher numbers.
+
+Clustered Deferred is generally better than Forward Plus in this situation due to its efficiency and speed. The precomputations that the Clustered Deferred method provides (in having the geometry represented as textures that we can sample) significantly speeds up the process in the final fragment shader. Expanding beyond this project, Clustered Deferred would most likely excel over Forward Plus for situations where they is more complex geometry and more lights in the scene that needs to be processed. As, the lighting would only be computed only once per each fragment in the scene. However, Forward Plus may excel in situations where the buffers in Clustered are not necessary in making things faster. This would be in simpler scenes (where there are not that many lights for example).
+
+In terms of trade-offs, for Clustered Deffered, although it provides a way to process more complex scenes easily and avoids overdraw, there is a significantly higher cost in supporting transparency and MSAA. There is also more bandwith for this method than for Forward Plus. The trade-offs for Forward Plus are essentially the opposite of clustered, although it can handle transparency and MSAA and has a lower bandwith, it has a worse performance for more complex scenes. 
+
+For potential avenues of optimization, one big factor would be to be more cautious when creating structs/buffers that will be copied over to the GPU. I think I definitely had data that I either did not use or could have been a constant but was instead passed as a buffer. I could also rewrite some of the helper functions to get rid of unnecessary for loops- for example, I think my SphereIntersectAABB function did not need to have a for loop and could be simplified.
 
 ## Resources Utilized 
 
