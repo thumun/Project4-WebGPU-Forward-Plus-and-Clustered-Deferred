@@ -50,6 +50,34 @@ FPS  |  Milliseconds per Frame
 :-------------------------:|:-------------------------:
 ![fps](https://github.com/thumun/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred/blob/main/img/fps.png?raw=true) |  ![ms](https://github.com/thumun/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred/blob/main/img/msperframe.png?raw=true) |
 
+### Frames per Second Table
+Number of Lights | Naive | Forward Plus | Clustered Deferred
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+100 | 171 | 238 | 230 |
+1000 |	21 |	217 |	236 |
+1500 |	14 |	155 |	233 |
+2000 |	10 |	114 |	240 |
+2500 |	8 |	93 |	240 |
+3000 |	7 |	75 |	240 |
+3500 |	6 |	69 |	235 |
+4000 |	5 |	64 |	222 |
+4500 |	5 |	55 |	209 |
+5000 |	4 |	52 |	194 |
+
+### Milliseconds per Frame Table
+Number of Lights | Naive | Forward Plus | Clustered Deferred
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+100 |	5.848 |	4.202 |	4.348 |
+1000 |	47.619 |	4.608 |	4.237 |
+1500 |	71.429 |	6.452 |	4.292 |
+2000 |	100 |	8.772 |	4.167 |
+2500 |	125 |	10.753 |	4.167 |
+3000 |	142.857 |	13.333 |	4.167 |
+3500 |	166.667 |	14.493 |	4.255 |
+4000 |	200 |	15.625 |	4.504 |
+4500 |	200 |	18.182 |	4.785 |
+5000 |	250 |	19.231 |	5.155 |
+
 As a note, the millisecond tracker was not working for me so I calculated the second chart by using the FPS.
 
 The charts indicate that the Clustered Deferred method is faster than the Forward Plus method and this is especially visible with high numbers of lights. The naive method, as expected, is considerably slower than the other two which is very visible at the higher light numbers. In general, the Naive method has a clear trend where after the lights get to around 1000 the frame rate drops significantly and stays that way. For the Forward Plus, the trend is much more gradual however by 3500-4000 lights it somewhat plateaus. For the Clustered Deffered, it is generally pretty consistent (and very fast) except for the final few datapoints. It is interesting to note that for the small amounts of lights (100 and 1000) the Clustered Deferred has a lower speed compared to higher numbers.
