@@ -20,7 +20,7 @@ At the top right of the screen, there is a control panel where you can adjust th
 
 ## Demo Video/GIF
 
-[Link to see demo!](TODO) -- update!!
+[Link to see demo!](https://drive.google.com/file/d/16y5c9l37l7ah5JPYgWAf2s-T9J3n-kGV/view?usp=sharing)
 
 ## Project Details
 ### Naive/Forward Method 
