@@ -11,7 +11,7 @@ WebGL Forward+ and Clustered Deferred Shading
 
 ## Live Demo
 
-[Link to run in your browser!](https://thumun.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred/)
+[Link to run in browser!](https://thumun.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Deferred/)
 
 ### Control Scheme 
 You can navigate the scene by using WASD on your keyboard. This will allow you to move forward, left, right, and backward (mapped accordingly). You can also rotate the camera by holding the mouse down and rotating the mouse. 
